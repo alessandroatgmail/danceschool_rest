@@ -1,0 +1,6 @@
+db.sqlite3
+/users/__pycache__/*
+/users/migrations/*
+/dance_rest/__pycache__/*
+/core/__pycache__/*
+/core/migrations/*
