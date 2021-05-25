@@ -28,7 +28,6 @@ class PublicUserApiTest(TestCase):
         """ test create user with payload is success"""
         payload = {'email': 'test@seelv.io',
                     'password': 'Test123456!',
-                    'name': "test name",
                     }
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -100,7 +99,6 @@ class PrivateUserApiTests(TestCase):
     def setUp(self):
         payload = {'email':'test@seelv.io',
                     'password': 'test123',
-                    'name': 'ale',
         }
         self.user=create_user(**payload)
         self.client = APIClient()
@@ -110,9 +108,12 @@ class PrivateUserApiTests(TestCase):
         """test retriving profile for logged user"""
         res = self.client.get(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, {
+        self.assertEqual(
+                    res.data,
+                    {
                     'email':'test@seelv.io',
-                    'name': 'ale'})
+                    }
+                )
 
     def test_post_me_not_allowed(self):
         """Test not allowed to post anything"""
@@ -124,12 +125,10 @@ class PrivateUserApiTests(TestCase):
         """Test update profile working"""
         payload = {
                     'password': 'new_password',
-                    'name': 'different name',
         }
 
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
-        self.assertEqual(self.user.name, payload['name'])
         self.assertTrue(self.user.check_password(payload['password']))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
