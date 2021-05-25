@@ -1,6 +1,7 @@
 dance_rest/db.sqlite3
 dance_rest/users/__pycache__
 dance_rest/users/migrations
+dance_rest/users/tests/__pychache__
 dance_rest/dance_rest/__pycache__
 dance_rest/core/__pycache__
 dance_rest/core/migrations
