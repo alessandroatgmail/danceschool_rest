@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import serializers
 from django.utils.translation import ugettext_lazy as _
+from core.models import UserDetails
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,3 +52,37 @@ class AuthTokenSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg, code='authentication')
         attrs['user'] = user
         return attrs
+
+
+class DetailsSerializer(serializers.ModelSerializer):
+    """ serialiazer for user_details """
+
+    class Meta:
+        model = UserDetails
+        fields = ('user', 'name', 'surname')
+
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    """Serializer for the details object"""
+
+    user_details = DetailsSerializer(
+        many=False, read_only=True
+        # queryset=UserDetails.objects.all()
+    )
+
+    class Meta:
+        model = get_user_model()
+        # model = UserDetails
+        fields = ['id', 'email', 'user_details', ]
+        # fields = ['name', 'surname', 'user__email']
+        # read_only_fields = ('id',)
+        # read_only_fields = ('user')
+
+
+
+
+
+# class UserDetailsSerializerComplete(serializers.ModelSerializer):
+#     """ serialiazer for complete user + details """
+#
+#     cl

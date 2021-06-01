@@ -6,6 +6,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from core.models import UserDetails
 
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -13,10 +14,29 @@ from rest_framework import status
 CREATE_USER_URL = reverse('users:create')
 TOKEN_URL = reverse('users:token')
 ME_URL = reverse('users:me')
+DETAILS_URL = reverse('users:details')
 
 def create_user(**param):
     return get_user_model().objects.create_user(**param)
 
+def create_user_complete(**param):
+
+    user = get_user_model().objects.create_user(
+                            email=param['email'],
+                            password=param['password']
+                            )
+    user_details = UserDetails.objects.create(
+                    user=user,
+                    name='Ale',
+                    surname='Silve',
+                    address='via roma, 7',
+                    city='Maserà',
+                    country='Italia',
+                    tel='+397532692',
+                    privacy=True,
+                    marketing=False
+    )
+    return user, user_details
 
 class PublicUserApiTest(TestCase):
     """Test the user API (public) """
@@ -121,7 +141,7 @@ class PrivateUserApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_update_user_profile(self):
+    def test_update_user_profile_simple(self):
         """Test update profile working"""
         payload = {
                     'password': 'new_password',
@@ -132,3 +152,39 @@ class PrivateUserApiTests(TestCase):
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password(payload['password']))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_read_user_complete(self):
+        """ test restrive all user data """
+
+        user, user_details = create_user_complete(email="ale@seelv.io",
+                                                  password='pwd12345')
+        self.client.force_authenticate(user=user)
+        res = self.client.get(DETAILS_URL)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        print (user_details)
+        self.assertEqual(res.data['email'], user.email)
+        self.assertEqual(dict(res.data['user_details']),
+                        {
+                        'user': user_details.user.id,
+                        'name': user_details.name,
+                        'surname': user_details.surname,
+                        }
+                )
+
+
+    # def test_create_user_complete(self):
+    #
+    #     payload = {
+    #         'email':'ale@seelv.io',
+    #         'name':'Ale',
+    #         'surname': 'Silvio',
+    #         'address': 'Via Torino, 5',
+    #         'city': 'Padova',
+    #         'country': 'Italia',
+    #         'tel': '+39049589623',
+    #         'privacy': True,
+    #         'marketing': False
+    #     }
+    #
+    #     res = self.client.post(DETAILS_URL, payload)
+    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)

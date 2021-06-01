@@ -45,7 +45,8 @@ class UserDetails(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        primary_key=True
+        primary_key=True,
+        related_name='user_details'
         )
     name = models.CharField(max_length=255, blank=False)
     surname = models.CharField(max_length=255, blank=False)
