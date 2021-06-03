@@ -36,9 +36,31 @@ class ManageDetailsUserView(viewsets.ModelViewSet, mixins.RetrieveModelMixin):
     associated with the user.
     """
     serializer_class = UserDetailsSerializer
+    authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = [permissions.IsAuthenticated,]
     # lookup_field = 'id'
     queryset = get_user_model().objects.all()
+    # def get_queryset(self):
+    #     return self.request.user.user_details
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        # make sure to catch 404's below
+        obj = queryset.get(pk=self.request.user.id)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
+class CreateDetailsUserView(viewsets.ModelViewSet, mixins.CreateModelMixin):
+    """
+    A simple ViewSet for viewing and editing the accounts
+    associated with the user.
+    """
+    serializer_class = UserDetailsSerializer
+    # permission_classes = [permissions.IsAuthenticated,]
+    # permission_classes = [permissions.IsAuthenticated,]
+    # lookup_field = 'id'
+    # queryset = get_user_model().objects.all()
     # def get_queryset(self):
     #     return self.request.user.user_details
 

@@ -15,6 +15,7 @@ CREATE_USER_URL = reverse('users:create')
 TOKEN_URL = reverse('users:token')
 ME_URL = reverse('users:me')
 DETAILS_URL = reverse('users:details')
+CREATE_DETAILS_USER = reverse ('users:create_details')
 
 def create_user(**param):
     return get_user_model().objects.create_user(**param)
@@ -112,6 +113,34 @@ class PublicUserApiTest(TestCase):
         res = self.client.get(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_create_user_complete(self):
+        """Test create user with full details """
+        payload = {
+            'email':'test@seelv.io',
+            'password': 'test12345',
+            'user_details':{
+            'name':'Ale',
+            'surname': 'Silvio',
+            'address': 'Via Torino, 5',
+            'city': 'Padova',
+            'country': 'Italia',
+            'tel': '+39049589623',
+            'privacy': True,
+            'marketing': False
+            }
+        }
+
+        res = self.client.post(CREATE_DETAILS_USER, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        user=get_user_model().objects.get(email=payload['email'])
+        user_details = UserDetails.objects.get(user=user.id)
+        self.assertEqual(user_details.surname, payload['user_details']['surname'])
+
+    def test_retrieve_user_details_unauthorized(self):
+        """Test that authentication is required to see user details """
+        res = self.client.get(DETAILS_URL)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 class PrivateUserApiTests(TestCase):
     """ Test API requests tha require auth"""
@@ -165,26 +194,16 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(res.data['email'], user.email)
         self.assertEqual(dict(res.data['user_details']),
                         {
-                        'user': user_details.user.id,
                         'name': user_details.name,
                         'surname': user_details.surname,
+                        'address': user_details.address,
+                        'city': user_details.city,
+                        'country': user_details.country,
+                        'tel': user_details.tel,
+                        'privacy': user_details.privacy,
+                        'marketing': user_details.marketing
                         }
                 )
 
-
-    # def test_create_user_complete(self):
-    #
-    #     payload = {
-    #         'email':'ale@seelv.io',
-    #         'name':'Ale',
-    #         'surname': 'Silvio',
-    #         'address': 'Via Torino, 5',
-    #         'city': 'Padova',
-    #         'country': 'Italia',
-    #         'tel': '+39049589623',
-    #         'privacy': True,
-    #         'marketing': False
-    #     }
-    #
-    #     res = self.client.post(DETAILS_URL, payload)
-    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+    # def test_create_user_already_logged_in(self):
+    #     """ Test regular user not able to create new user """

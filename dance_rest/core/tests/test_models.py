@@ -4,7 +4,9 @@
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from core.models import UserDetails, Location, Artist, Event
+from core.models import UserDetails, Location, Artist, Event, Pack, Discount, \
+                        Booking
+
 
 class ModelTests(TestCase):
 
@@ -49,6 +51,7 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_staff)
 
     def test_create_user_details(self):
+        """ Test model to create a user with full details """
         email = 'test@seelv.io'
         password = 'Password123'
         name = 'Ale'
@@ -147,6 +150,7 @@ class ModelTests(TestCase):
         event_date = "2021-05-18"
         event_time = "21:00"
         event_description = "Lezione beginner livello 1 più social dance dalle 23.00"
+        price = 10.0
 
         event = Event.objects.create(
             name=event_name,
@@ -154,7 +158,8 @@ class ModelTests(TestCase):
             date=event_date,
             time=event_time,
             description=event_description,
-            location=location
+            location=location,
+            price=price
         )
 
         # create two artists and add to the event
@@ -198,3 +203,140 @@ class ModelTests(TestCase):
         self.assertEqual(event.time, event_time)
         self.assertEqual(event.description, event_description)
         self.assertIn(artist, event.artist.all())
+
+
+class BookingModelTests(TestCase):
+
+    def setUp(self):
+        # create user
+        email = 'test@seelv.io'
+        password = 'Password123'
+
+        self.user = get_user_model().objects.create_user(
+			email=email,
+			password=password,
+
+		)
+        # create location, artists and event
+        # first create the Location
+
+        name = "Carichi Sospesi"
+        address = "vic. Portello 1"
+        city = "Padova"
+        room = "Main"
+        self.location = Location.objects.create(
+            name=name,
+            address=address,
+            city=city,
+            room=room
+        )
+
+        # create event
+        event_name = "Bounce Factory"
+        event_type = "Weekely beginner Class"
+        event_date = "2021-05-18"
+        event_time = "21:00"
+        event_description = "Lezione beginner livello 1 più social dance dalle 23.00"
+        price = 10.0
+
+        self.event = Event.objects.create(
+            name=event_name,
+            type=event_type,
+            date=event_date,
+            time=event_time,
+            description=event_description,
+            location=self.location,
+            price=price
+
+        )
+
+        # create two artists and add to the event
+
+        name = "Frankie Manning"
+        type = "Teacher"
+        style = "Lindy Hop"
+        description = ""
+        country = "United Kingdom"
+
+        self.artist = Artist.objects.create(
+            name=name,
+            type=type,
+            style=style,
+            description=description,
+            country=country
+        )
+
+        name = "Count Basie"
+        type = "Band"
+        style = "Swing"
+        description = ""
+        country = "USA"
+
+        self.artist2 = Artist.objects.create(
+            name=name,
+            type=type,
+            style=style,
+            description=description,
+            country=country
+        )
+
+        self.event.artist.add(self.artist)
+
+        # create event 2
+
+        self.event.save()
+
+        event_name = "Bounce Factory"
+        event_type = "Social live music"
+        event_date = "2021-05-18"
+        event_time = "22:30"
+        event_description = "Social dance with live band!!!"
+
+        self.event2 = Event.objects.create(
+            name=event_name,
+            type=event_type,
+            date=event_date,
+            time=event_time,
+            description=event_description,
+            location=self.location,
+            price=price
+
+        )
+        self.event2.artist.add(self.artist2)
+        self.event2.save()
+
+    def test_create_package(self):
+        """ test package creation with 2 events"""
+
+        pack_name = "Bounce Factory all night"
+        price = 15.0
+        pack = Pack.objects.create(name=pack_name, price=price)
+        pack.events.add(self.event)
+        pack.events.add(self.event2)
+        # create and add a discount
+        disc = Discount.objects.create(name="couple discount", discount=15.0)
+        pack.discounts.add(disc)
+        pack.save()
+        pack = Pack.objects.get(id=pack.id)
+
+        self.assertIn(self.event, pack.events.all())
+
+    def test_booking(self):
+        """ test package creation with 2 events"""
+
+        pack_name = "Bounce Factory all night"
+        price = 15.0
+        pack = Pack.objects.create(name=pack_name, price=price)
+        pack.events.add(self.event)
+        pack.events.add(self.event2)
+        # create and add a discount
+        disc = Discount.objects.create(name="couple discount", discount=15.0)
+        pack.discounts.add(disc)
+        pack.save()
+        pack = Pack.objects.get(id=pack.id)
+
+        booking = Booking.objects.create(users=self.user, packs=pack)
+
+
+        self.assertEqual(booking.users, self.user)
+        self.assertEqual(booking.packs, pack)

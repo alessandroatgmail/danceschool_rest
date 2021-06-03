@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
                                         PermissionsMixin
+from datetime import date
 
 
 class UserManager(BaseUserManager):
@@ -84,3 +85,25 @@ class Event(models.Model):
     time = models.TimeField()
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     artist = models.ManyToManyField(Artist)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+class Discount(models.Model):
+    """Model for discount apply to the package """
+    name = models.CharField(max_length=255, blank=False)
+    discount = models.DecimalField(max_digits=4, decimal_places=2)
+
+class Pack(models.Model):
+    """Model for package, a package is a list of events for purchase """
+    name = models.CharField(max_length=255, blank=False)
+    description = models.TextField()
+    events = models.ManyToManyField(Event)
+    discounts = models.ManyToManyField(Discount)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+
+class Booking(models.Model):
+    users = models.ForeignKey(User, on_delete=models.PROTECT)
+    packs = models.ForeignKey(Pack, on_delete=models.PROTECT)
+    date = models.DateField(default=date.today().strftime("%Y-%m-%d"))
+    payed = models.BooleanField(default=False)
+    date_payed = models.DateField(null=True, blank=True)

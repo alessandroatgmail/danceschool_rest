@@ -11,4 +11,7 @@ urlpatterns = [
     path('details/',
         views.ManageDetailsUserView.as_view({'get': 'retrieve'}),
         name='details'),
+    path('create_details/',
+        views.CreateDetailsUserView.as_view({'post': 'create'}),
+        name='create_details'),
 ]

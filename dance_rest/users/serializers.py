@@ -59,26 +59,31 @@ class DetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserDetails
-        fields = ('user', 'name', 'surname')
+        fields = ('name', 'surname', 'address', 'city', 'country',
+                  'tel', 'privacy', 'marketing')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     """Serializer for the details object"""
 
     user_details = DetailsSerializer(
-        many=False, read_only=True
-        # queryset=UserDetails.objects.all()
+        many=False,
     )
 
     class Meta:
         model = get_user_model()
         # model = UserDetails
-        fields = ['id', 'email', 'user_details', ]
+        fields = ['id', 'email', 'password', 'user_details', ]
         # fields = ['name', 'surname', 'user__email']
         # read_only_fields = ('id',)
         # read_only_fields = ('user')
 
-
+    def create(self, validated_data):
+        user_details = validated_data.pop('user_details')
+        user = get_user_model().objects.create(**validated_data)
+        UserDetails.objects.create(user=user, **user_details)
+        print (user)
+        return user
 
 
 
