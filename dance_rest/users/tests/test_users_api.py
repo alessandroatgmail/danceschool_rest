@@ -17,6 +17,7 @@ ME_URL = reverse('users:me')
 DETAILS_URL = reverse('users:details')
 CREATE_DETAILS_USER = reverse ('users:create_details')
 
+
 def create_user(**param):
     return get_user_model().objects.create_user(**param)
 
@@ -204,6 +205,3 @@ class PrivateUserApiTests(TestCase):
                         'marketing': user_details.marketing
                         }
                 )
-
-    # def test_create_user_already_logged_in(self):
-    #     """ Test regular user not able to create new user """
