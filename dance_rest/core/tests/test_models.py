@@ -234,7 +234,7 @@ class BookingModelTests(TestCase):
         # create event
         event_name = "Bounce Factory"
         event_type = "Weekely beginner Class"
-        event_date = "2021-05-18"
+        event_date = "2021-05-17"
         event_time = "21:00"
         event_description = "Lezione beginner livello 1 più social dance dalle 23.00"
         price = 10.0
@@ -320,6 +320,9 @@ class BookingModelTests(TestCase):
         pack = Pack.objects.get(id=pack.id)
 
         self.assertIn(self.event, pack.events.all())
+        #check starting date
+        self.assertEqual(min([self.event.date, self.event2.date]),
+                         str(pack.starting_date))
 
     def test_booking(self):
         """ test package creation with 2 events"""

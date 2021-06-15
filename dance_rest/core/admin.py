@@ -44,9 +44,25 @@ class UserDetailsAdmin(admin.ModelAdmin):
         return obj.user.email
 
 
+class EventAdmin(admin.ModelAdmin):
+    ordering = ['date']
+    list_display = ['name', 'date', 'location']
+
+
+class PackAdmin(admin.ModelAdmin):
+    # ordering = ['date']
+    list_display = ['name', 'price', 'starting_date']
+    # def starting_date(self, obj):
+    #     return max([event.date for event in obj.events.all()])
+
+
 # @admin.register(models.User, models.UserDetails)
 # class UserDetailsAdmin(admin.ModelAdmin):
 #     pass
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.UserDetails, UserDetailsAdmin)
+admin.site.register(models.Artist)
+admin.site.register(models.Location)
+admin.site.register(models.Event, EventAdmin)
+admin.site.register(models.Pack, PackAdmin)

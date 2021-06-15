@@ -66,6 +66,10 @@ class Location(models.Model):
     city = models.CharField(max_length=255, blank=False)
     room = models.CharField(max_length=255)
 
+    def __str__(self):
+
+        return self.name
+
 
 class Artist(models.Model):
     """Model with bio details of artists """
@@ -74,6 +78,10 @@ class Artist(models.Model):
     type = models.CharField(max_length=50, blank=False)
     description = models.TextField()
     country = models.CharField(max_length=50, blank=False)
+
+    def __str__(self):
+
+        return self.name
 
 
 class Event(models.Model):
@@ -87,6 +95,10 @@ class Event(models.Model):
     artist = models.ManyToManyField(Artist)
     price = models.DecimalField(max_digits=6, decimal_places=2)
 
+    def __str__(self):
+
+        return self.name
+
 class Discount(models.Model):
     """Model for discount apply to the package """
     name = models.CharField(max_length=255, blank=False)
@@ -95,10 +107,19 @@ class Discount(models.Model):
 class Pack(models.Model):
     """Model for package, a package is a list of events for purchase """
     name = models.CharField(max_length=255, blank=False)
-    description = models.TextField()
-    events = models.ManyToManyField(Event)
-    discounts = models.ManyToManyField(Discount)
+    description = models.TextField(blank=True, null=True)
+    events = models.ManyToManyField(Event, blank=True, null=True)
+    discounts = models.ManyToManyField(Discount, blank=True, null=True)
     price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+
+        return self.name
+
+    @property
+    def starting_date(self):
+
+        return min([event.date for event in self.events.all()])
 
 
 class Booking(models.Model):
